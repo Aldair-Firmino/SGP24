@@ -52,16 +52,29 @@ def salvar():
         if nome:
             pdf.cell(0, 6, limpar_texto(f"{i}. {nome} [{request.form.get('s'+str(i), '')}]"), border='B', ln=1)
 
-    # 2. POSTOS DIA
+    
+    # 2. POSTOS DIA (Ajustado para separar as colunas e limpar o texto)
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
+    
+    # Cabeçalho das colunas
+    pdf.set_font('Arial', 'B', 8)
+    pdf.cell(95, 7, "MONITORAMENTO (CAMERAS)", 1, 0, 'C')
+    pdf.cell(95, 7, "ABERTURA DE PORTAO", 1, 1, 'C')
+    
     pdf.set_font('Arial', '', 8)
     h_lista = ['08:00 AS 10:00','10:00 AS 12:00','12:00 AS 14:00','14:00 AS 16:00','16:00 AS 18:00']
+    
     for i, h in enumerate(h_lista, 1):
+        # Pegando os nomes dos inputs do formulário
         p_mon = request.form.get(f'mon_camera_{i}', '').upper()
         p_por = request.form.get(f'portao_{i}', '').upper()
-        pdf.cell(95, 7, limpar_texto(f"{h} - CAM: {p_mon}"), 1)
-        pdf.cell(95, 7, limpar_texto(f"{h} - PT: {p_por}"), 1, 1)
+        
+        # Criando a linha com duas colunas separadas
+        # Coluna 1: Câmeras
+        pdf.cell(95, 7, limpar_texto(f"{h} - {p_mon}"), 1, 0, 'L')
+        # Coluna 2: Portão (Removido o "PT")
+        pdf.cell(95, 7, limpar_texto(f"{h} - {p_por}"), 1, 1, 'L')
 
     # 3. ESCALA NOITE
     pdf.add_page()
