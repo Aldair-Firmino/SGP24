@@ -11,13 +11,28 @@ class SGP_PDF(FPDF):
         self.cell(0, 10, 'SGP-24 | CRONOGRAMA DE PLANTAO', 0, 1, 'C')
         self.ln(5)
 
+    def footer(self):
+        # Posiciona a 1,5 cm do fim da página
+        self.set_y(-15)
+        self.set_font('Arial', 'I', 8)
+        self.set_text_color(160, 160, 160) # Cinza discreto
+        # Marca d'água no canto direito
+        self.cell(0, 10, 'Powered by Soluções Inteligentes', 0, 0, 'R')
+        # Número da página no canto esquerdo
+        self.set_x(10)
+        self.cell(0, 10, f'Página {self.page_no()}', 0, 0, 'L')
+
     def secao(self, titulo):
         self.set_font('Arial', 'B', 10)
         self.set_fill_color(230, 230, 230)
         self.cell(0, 8, titulo, 1, 1, 'L', fill=True)
         self.ln(2)
 
-# ROTA PARA O MANIFESTO (ESSENCIAL PARA PWA/CELULAR)
+def limpar_texto(txt):
+    if not txt: return ""
+    # Remove emojis ou caracteres que o PDF não suporta e garante compatibilidade
+    return txt.encode('latin-1', 'replace').decode('latin-1')
+
 @app.route('/static/manifest.json')
 def serve_manifest():
     return send_from_directory('static', 'manifest.json')
@@ -32,13 +47,9 @@ def salvar():
     data_p = request.form.get('data', '')
     
     pdf = SGP_PDF()
+    pdf.set_auto_page_break(auto=True, margin=20)
     pdf.add_page()
     
-    # Função para evitar erros de caracteres especiais no celular
-    def limpar_texto(txt):
-        if not txt: return ""
-        return txt.encode('latin-1', 'replace').decode('latin-1')
-
     # 1. EFETIVO
     pdf.secao("RELACAO GERAL DE EFETIVO")
     chefe = request.form.get('chefe_nome', '').upper()
@@ -52,35 +63,24 @@ def salvar():
         if nome:
             pdf.cell(0, 6, limpar_texto(f"{i}. {nome} [{request.form.get('s'+str(i), '')}]"), border='B', ln=1)
 
-    
-    # 2. POSTOS DIA (Ajustado para separar as colunas e limpar o texto)
+    # 2. POSTOS DIA (CORRIGIDO: COLUNAS SEPARADAS E SEM "PT")
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
-    
-    # Cabeçalho das colunas
     pdf.set_font('Arial', 'B', 8)
     pdf.cell(95, 7, "MONITORAMENTO (CAMERAS)", 1, 0, 'C')
     pdf.cell(95, 7, "ABERTURA DE PORTAO", 1, 1, 'C')
     
     pdf.set_font('Arial', '', 8)
     h_lista = ['08:00 AS 10:00','10:00 AS 12:00','12:00 AS 14:00','14:00 AS 16:00','16:00 AS 18:00']
-    
     for i, h in enumerate(h_lista, 1):
-        # Pegando os nomes dos inputs do formulário
         p_mon = request.form.get(f'mon_camera_{i}', '').upper()
         p_por = request.form.get(f'portao_{i}', '').upper()
-        
-        # Criando a linha com duas colunas separadas
-        # Coluna 1: Câmeras
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_mon}"), 1, 0, 'L')
-        # Coluna 2: Portão (Removido o "PT")
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_por}"), 1, 1, 'L')
 
     # 3. ESCALA NOITE
-    pdf.add_page()
+    pdf.ln(5)
     pdf.secao("ESCALA NOTURNA")
-    
-    # Quarto de Hora Dinâmico
     pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
     pdf.set_font('Arial', '', 9)
     for i in range(1, 12):
@@ -103,6 +103,8 @@ def salvar():
     return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
-    # O Render usa a porta definida pelo sistema, mas localmente usa a 5000
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
+    
+ 
