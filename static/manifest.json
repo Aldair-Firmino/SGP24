@@ -1,0 +1,16 @@
+{
+  "name": "SGP-24 Controle Operacional",
+  "short_name": "SGP-24",
+  "description": "Sistema de Gerenciamento de Plantão",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1022/1022375.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
