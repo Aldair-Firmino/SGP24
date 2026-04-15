@@ -35,97 +35,76 @@ def salvar():
     
     def limpar_texto(txt):
         if not txt: return ""
-        return txt.encode('latin-1', 'replace').decode('latin-1')
+        return str(txt).encode('latin-1', 'replace').decode('latin-1')
 
-    # --- 1. EFETIVO (Com Filtro ADM e Regra do Chefe) ---
+    # --- 1. EFETIVO ---
     pdf.secao("RELACAO GERAL DE EFETIVO")
+    chefe = request.form.get('chefe_nome', '').upper()
+    mat = request.form.get('chefe_mat', '')
+    if chefe:
+        pdf.set_font('Arial', 'B', 9)
+        pdf.cell(0, 7, limpar_texto(f"CHEFE DE EQUIPE: {chefe} | MAT: {mat}"), border='B', ln=1)
     
-    # Contagem de ativos para regra do chefe
-    ativos = 0
-    lista_policiais = []
-    for i in range(1, 13): # Agora até 12 policiais
+    pdf.set_font('Arial', '', 9)
+    for i in range(1, 13):
         nome = request.form.get(f'p{i}', '').upper()
         status = request.form.get(f's{i}', '')
         if nome:
-            lista_policiais.append({'nome': nome, 'status': status})
-            if status != 'ADM':
-                ativos += 1
+            pdf.cell(0, 6, limpar_texto(f"{i}. {nome} [{status}]"), border='B', ln=1)
 
-    chefe = request.form.get('chefe_nome', '').upper()
-    if chefe:
-        # Se ativos > 7, chefe fica como 'SUPERVISAO', se não, 'OPERACIONAL'
-        msg_chefe = " (SUPERVISAO)" if ativos > 7 else " (OPERACIONAL)"
-        pdf.set_font('Arial', 'B', 9)
-        pdf.cell(0, 7, limpar_texto(f"CHEFE DE EQUIPE: {chefe}{msg_chefe}"), border='B', ln=1)
-    
-    pdf.set_font('Arial', '', 9)
-    for i, p in enumerate(lista_policiais, 1):
-        pdf.cell(0, 6, limpar_texto(f"{i}. {p['nome']} [{p['status']}]"), border='B', ln=1)
-
-    # --- 2. POSTOS DIA (Com suporte a novos campos) ---
+    # --- 2. POSTOS DIA ---
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
     pdf.set_font('Arial', '', 8)
     
-    # Recepção e Carceragem Ampliados
-    recepcao = request.form.get('recepcao_nomes', '').upper()
-    carceragem = request.form.get('carceragem_nomes', '').upper()
-    pdf.multi_cell(0, 7, limpar_texto(f"RECEPCAO: {recepcao}"), 1)
-    pdf.multi_cell(0, 7, limpar_texto(f"CARCERAGEM: {carceragem}"), 1)
+    # Recepção e Carceragem (Novos 4 campos)
+    rec_nomes = ", ".join([request.form.get(f'rec_p{i}', '').upper() for i in range(1, 5) if request.form.get(f'rec_p{i}')])
+    car_nomes = ", ".join([request.form.get(f'car_p{i}', '').upper() for i in range(1, 5) if request.form.get(f'car_p{i}')])
     
+    pdf.multi_cell(0, 7, limpar_texto(f"RECEPCAO: {rec_nomes}"), 1)
+    pdf.multi_cell(0, 7, limpar_texto(f"CARCERAGEM: {car_nomes}"), 1)
+    
+    # Monitoramento e Portão (Uso do .get para evitar o erro KeyError)
     pdf.ln(2)
-    # Monitoramento e Portão (Puxando os horários calculados)
-    h_lista = ['08:00 AS 10:00','10:00 AS 12:00','12:00 AS 14:00','14:00 AS 16:00','16:00 AS 18:00']
-    for i, h in enumerate(h_lista, 1):
-        p_mon = request.form.get(f'mon_camera_{i}', '').upper()
-        p_por = request.form.get(f'portao_{i}', '').upper()
-        pdf.cell(95, 7, limpar_texto(f"{h} - CAM: {p_mon}"), 1)
-        pdf.cell(95, 7, limpar_texto(f"{h} - PT: {p_por}"), 1, 1)
-
-    # --- 3. PRÉ-QUARTO E ESCALA NOTURNA ---
-    pdf.add_page()
-    pdf.secao("PRE-QUARTO E ESCALA NOTURNA")
-    
-    # Nova Seção: Pré-Quarto (Divisão por 7)
-    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "PRE-QUARTO (DIVISAO POR 7)", ln=1)
-    pdf.set_font('Arial', '', 8)
+    pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, "MONITORAMENTO E PORTAO:", ln=1)
+    pdf.set_font('Arial', '', 7)
     for i in range(1, 8):
-        h_pq = request.form.get(f'pq_horario{i}', '')
-        p_pq = request.form.get(f'pq_p{i}', '').upper()
-        if p_pq:
-            pdf.cell(0, 7, limpar_texto(f"{i}o Turno: {h_pq} - {p_pq}"), border='B', ln=1)
+        h_mon = request.form.get(f'mon_camera_{i}', '')
+        h_por = request.form.get(f'portao_{i}', '')
+        if h_mon or h_por:
+            pdf.cell(95, 6, limpar_texto(h_mon), 1)
+            pdf.cell(95, 6, limpar_texto(h_por), 1, 1)
 
-    pdf.ln(5)
-    # Quarto de Hora
-    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
-    pdf.set_font('Arial', '', 9)
+    # --- 3. ESCALA NOTURNA ---
+    pdf.add_page()
+    pdf.secao("ESCALA NOTURNA")
     for i in range(1, 13):
-        nome_qh = request.form.get(f'qh_p{i}', '').upper()
-        horario_qh = request.form.get(f'qh_horario{i}', '')
-        if nome_qh:
-            pdf.cell(0, 8, limpar_texto(f"{horario_qh} {nome_qh}"), border='B', ln=1)
+        n = request.form.get(f'qh_p{i}', '').upper()
+        h = request.form.get(f'qh_horario{i}', '')
+        if n:
+            pdf.cell(0, 7, limpar_texto(f"{h} - {n}"), border='B', ln=1)
 
-    # --- 4. MISSÕES ---
-    # (Mantenha o início do seu código igual, apenas adicione/altere esta parte no método salvar)
-
-    # ... dentro do def salvar():
-
-    # 4. MISSÕES E ALMOÇO
-    pdf.ln(5); pdf.secao("OBSERVACOES, MISSOES E ALMOCO")
-    
-    # Missões normais
+    # --- 4. MISSÕES E ALMOÇO ---
+    pdf.ln(5); pdf.secao("OBSERVACOES E ALMOCO")
     for m in ['defensoria', 'itep', 'ctc', 'atendimento_medico', 'missao_externa', 'missao_interna']:
         conteudo = request.form.get(m, '')
         if conteudo:
-            pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, f"{m.upper().replace('_', ' ')}:", ln=1)
+            pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, f"{m.upper()}:", ln=1)
             pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(conteudo), border='B')
-
-    # Novo: Almoço / Repouso no PDF
-    pdf.ln(2)
-    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 7, "ALMOCO / REPOUSO:", ln=1)
+    
     alm1 = request.form.get('almoco_1', '')
     alm2 = request.form.get('almoco_2', '')
-    if alm1: pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(f"1) {alm1}"), border='B')
-    if alm2: pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(f"2) {alm2}"), border='B')
+    if alm1 or alm2:
+        pdf.ln(2); pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, "ALMOCO / REPOUSO:", ln=1)
+        pdf.set_font('Arial', '', 8)
+        if alm1: pdf.multi_cell(0, 5, limpar_texto(f"1) {alm1}"), border='B')
+        if alm2: pdf.multi_cell(0, 5, limpar_texto(f"2) {alm2}"), border='B')
 
-    # (Mantenha o restante do código igual)
+    filename = f"SGP24_{equipe}.pdf"
+    path = os.path.join(BASE_DIR, filename)
+    pdf.output(path)
+    return send_file(path, as_attachment=True)
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
