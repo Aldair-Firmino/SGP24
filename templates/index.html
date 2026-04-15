@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
     <title>SGP-24 | Controle de Plantão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,47 +14,49 @@
         input, select, textarea { font-size: 16px !important; }
     </style>
 </head>
-<body class="bg-gray-200 font-sans" onload="atualizarTodosOsCampos()">
+<body class="bg-gray-200 font-sans" onload="calcularEscalaDinamica()">
     <form action="/salvar" method="POST" class="max-w-6xl mx-auto bg-white min-h-screen shadow-2xl overflow-hidden pb-20">
         
         <div class="bg-blue-900 p-4 text-white flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
-            <h1 class="text-xl font-black uppercase">SGP-24 | CONTROLE OPERACIONAL</h1>
-            <div class="flex gap-2 text-black">
+            <h1 class="text-xl font-black tracking-tighter uppercase text-center md:text-left">SGP-24 | CONTROLE OPERACIONAL</h1>
+            <div class="flex gap-2 justify-center text-black">
                 <input type="text" name="equipe" placeholder="EQUIPE" class="p-2 rounded font-bold w-24 uppercase text-center" required>
                 <input type="date" name="data" class="p-2 rounded font-bold text-sm" required>
             </div>
         </div>
 
-        <div class="flex bg-gray-100 border-b overflow-x-auto sticky top-0 z-50">
+        <div class="flex bg-gray-100 border-b overflow-x-auto sticky top-0 z-50 whitespace-nowrap">
             <button type="button" onclick="openTab('aba1')" id="btn-aba1" class="px-6 py-4 font-bold tab-active uppercase text-xs">1. Efetivo</button>
             <button type="button" onclick="openTab('aba2')" id="btn-aba2" class="px-6 py-4 font-bold uppercase text-xs">2. Postos Dia</button>
-            <button type="button" onclick="openTab('aba3')" id="btn-aba3" class="px-6 py-4 font-bold uppercase text-xs">3. Noite/Café</button>
+            <button type="button" onclick="openTab('aba3')" id="btn-aba3" class="px-6 py-4 font-bold uppercase text-xs">3. Postos/Noite</button>
             <button type="button" onclick="openTab('aba4')" id="btn-aba4" class="px-6 py-4 font-bold uppercase text-xs">4. Missões</button>
         </div>
 
         <div class="p-4 md:p-6">
             <div id="aba1" class="tab-content active">
                 <div class="max-w-2xl mx-auto">
-                    <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200 mb-6 shadow-sm">
                         <label class="block text-blue-900 font-black text-[10px] uppercase mb-1">Chefe de Equipe</label>
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center gap-2 border-b-2 border-blue-400 pb-1">
-                                <input type="text" id="chefe_nome" name="chefe_nome" oninput="atualizarTodosOsCampos()" placeholder="NOME DO CHEFE" class="flex-1 bg-transparent font-bold outline-none uppercase text-sm">
+                                <input type="text" id="chefe_nome" name="chefe_nome" oninput="calcularEscalaDinamica()" placeholder="NOME DO CHEFE" class="flex-1 bg-transparent font-bold outline-none uppercase text-sm">
                                 <div class="flex items-center gap-1 shrink-0">
                                     <span class="text-[10px] font-black text-blue-900 uppercase">MATRÍCULA:</span>
                                     <input type="text" name="chefe_mat" placeholder="000.000-0" class="w-28 bg-transparent text-sm outline-none font-bold uppercase text-right">
                                 </div>
                             </div>
-                            <div id="status_chefe" class="text-[9px] font-black p-1 rounded bg-white/60 text-center uppercase border border-blue-100">Aguardando...</div>
+                            <div id="status_chefe" class="text-[9px] font-black p-1 rounded bg-white/60 text-center uppercase tracking-tighter border border-blue-100">
+                                Aguardando Efetivo...
+                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-2">
                         {% for i in range(1, 13) %}
-                        <div class="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200 uppercase">
-                            <span class="font-black text-blue-900 text-xs w-4">{{i}}</span>
-                            <input type="text" id="p{{i}}" name="p{{i}}" oninput="atualizarTodosOsCampos()" placeholder="Nome do Policial" class="flex-1 p-1 text-sm border-b bg-transparent outline-none uppercase">
-                            <select id="s{{i}}" name="s{{i}}" onchange="atualizarTodosOsCampos()" class="font-bold text-blue-700 text-[10px] bg-transparent">
+                        <div class="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200 uppercase text-xs">
+                            <span class="font-black text-blue-900 w-4">{{i}}</span>
+                            <input type="text" id="p{{i}}" name="p{{i}}" oninput="calcularEscalaDinamica()" placeholder="NOME" class="flex-1 p-1 bg-transparent border-b outline-none">
+                            <select id="s{{i}}" name="s{{i}}" onchange="calcularEscalaDinamica()" class="font-bold text-blue-700 bg-transparent">
                                 <option value="24H">24H</option>
                                 <option value="ADM">ADM</option>
                                 <option value="12hD">12hD</option>
@@ -66,45 +70,59 @@
 
             <div id="aba2" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-3 rounded bg-blue-50 shadow-sm">
-    <h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção</h4>
-    <div class="space-y-2">
-        <input type="text" name="rec_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="rec_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="rec_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="rec_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-    </div>
-</div>
-
-<div class="border p-3 rounded bg-gray-50 shadow-sm">
-    <h4 class="font-bold text-gray-700 mb-3 border-b uppercase text-xs text-center">Carceragem</h4>
-    <div class="space-y-2">
-        <input type="text" name="car_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="car_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="car_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-        <input type="text" name="car_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-    </div>
-</div>
-                    <div class="border p-3 rounded bg-slate-100">
-                        <h4 class="font-bold text-slate-800 mb-3 border-b uppercase text-xs text-center">Monitoramento: Câmeras</h4>
-                        <div id="container_mon" class="space-y-1"></div>
+                    <div class="border p-3 rounded bg-green-50 md:col-span-2 shadow-sm">
+                        <h4 class="font-bold text-green-900 mb-3 border-b uppercase text-xs text-center">Monitoramento Manhã (06:00 às 08:00)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                            {% for h in ['06:00 - 06:30','06:30 - 07:00','07:00 - 07:30','07:30 - 08:00'] %}
+                            <div class="flex items-center gap-2 border-b pb-1">
+                                <span class="text-[9px] font-black w-20">{{h}}</span>
+                                <input type="text" name="mon_manha_{{loop.index}}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <div class="border p-3 rounded bg-yellow-50">
+
+                    <div class="border p-3 rounded bg-blue-50 shadow-sm">
+                        <h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção</h4>
+                        <div class="space-y-2">
+                            <input type="text" name="rec_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="rec_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="rec_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="rec_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                        </div>
+                    </div>
+
+                    <div class="border p-3 rounded bg-gray-50 shadow-sm">
+                        <h4 class="font-bold text-gray-700 mb-3 border-b uppercase text-xs text-center">Carceragem</h4>
+                        <div class="space-y-2">
+                            <input type="text" name="car_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="car_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="car_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                            <input type="text" name="car_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                        </div>
+                    </div>
+
+                    <div class="border p-3 rounded bg-slate-100 shadow-sm">
+                        <h4 class="font-bold text-slate-800 mb-3 border-b uppercase text-xs text-center">Monitoramento: Câmeras</h4>
+                        <div id="container_mon" class="space-y-2"></div>
+                    </div>
+
+                    <div class="border p-3 rounded bg-yellow-50 shadow-sm">
                         <h4 class="font-bold text-yellow-800 mb-3 border-b uppercase text-xs text-center">Abertura de Portão</h4>
-                        <div id="container_por" class="space-y-1"></div>
+                        <div id="container_por" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
 
             <div id="aba3" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-4 rounded bg-white">
-                        <h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs">1. Pré-Quarto (18:00 às 22:00)</h4>
-                        <div id="container_pq" class="space-y-1"></div>
+                    <div class="border p-4 rounded bg-white shadow-sm">
+                        <h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs text-center">Pré-Quarto (18:00 às 22:00)</h4>
+                        <div id="container_pq" class="space-y-2"></div>
                     </div>
                     <div class="border p-4 rounded bg-slate-900 text-white shadow-xl">
-                        <h4 class="font-bold text-yellow-400 border-b border-gray-700 mb-3 uppercase text-center text-xs">2. Quarto de Hora (22:00 às 06:00)</h4>
-                        <div id="container_qh" class="space-y-1"></div>
+                        <h4 class="font-bold text-yellow-400 border-b border-gray-700 mb-3 uppercase text-center text-xs">Quarto de Hora (22:00 às 06:00)</h4>
+                        <div id="container_qh" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -113,19 +131,25 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for m in ['defensoria','itep','ctc','atendimento_medico','missao_externa','missao_interna'] %}
                     <div class="p-3 border rounded bg-gray-50 uppercase shadow-sm">
-                        <label class="text-[10px] font-black text-blue-800 uppercase block mb-1">{{m.replace('_',' ')}}</label>
+                        <label class="text-[10px] font-black text-blue-800 block mb-1 uppercase">{{m.replace('_',' ')}}</label>
                         <textarea name="{{m}}" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
                     </div>
                     {% endfor %}
+
                     <div class="p-4 border-2 border-blue-200 rounded-lg bg-white shadow-md md:col-span-2">
-                        <h4 class="font-black text-blue-900 border-b-2 border-blue-100 mb-4 uppercase text-xs">ALMOÇO / REPOUSO</h4>
-                        <textarea name="almoco_1" placeholder="1º TURNO..." class="w-full h-10 text-sm border-b mb-2 outline-none uppercase"></textarea>
-                        <textarea name="almoco_2" placeholder="2º TURNO..." class="w-full h-10 text-sm border-b outline-none uppercase"></textarea>
+                        <h4 class="font-black text-blue-900 border-b-2 border-blue-100 mb-4 uppercase text-xs text-center">ALMOÇO / REPOUSO</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <textarea name="almoco_1" placeholder="1) ___________________________________" class="w-full h-12 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
+                            <textarea name="almoco_2" placeholder="2) ___________________________________" class="w-full h-12 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <button type="submit" class="fixed bottom-0 left-0 right-0 bg-blue-900 text-white py-4 font-black text-lg uppercase">Gerar PDF</button>
+
+        <button type="submit" class="fixed bottom-0 left-0 right-0 bg-blue-900 text-white py-4 font-black text-lg uppercase tracking-widest transition-all hover:bg-black">
+            Gerar PDF do Plantão
+        </button>
     </form>
 
     <script>
@@ -134,44 +158,32 @@
             document.querySelectorAll('button[type="button"]').forEach(b => b.classList.remove('tab-active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('tab-active');
+            window.scrollTo(0, 0);
         }
 
         function formatarHora(data) {
             return data.getHours().toString().padStart(2,'0') + ":" + data.getMinutes().toString().padStart(2,'0');
         }
 
-        function atualizarTodosOsCampos() {
+        function calcularEscalaDinamica() {
             let chefe = document.getElementById('chefe_nome').value.toUpperCase();
-            let policiais = [];
-            let operacionais = []; // Exclui ADM e Chefe para escalas automáticas
+            let ativosOperacionais = []; 
+            let totalParaRegra = 0; 
 
             for (let i = 1; i <= 12; i++) {
                 let nome = document.getElementById('p' + i).value.toUpperCase();
                 let status = document.getElementById('s' + i).value;
-                if (nome.trim() !== "") {
-                    policiais.push(nome);
-                    if (status !== "ADM") {
-                        if (status !== "12hD") operacionais.push(nome);
-                    }
+                if (nome.trim() !== "" && status !== "ADM") {
+                    totalParaRegra++;
+                    if (status !== "12hD") ativosOperacionais.push(nome);
                 }
             }
 
-            // Atualiza os seletores de nomes na Aba 2
-            document.querySelectorAll('.select-policiais').forEach(sel => {
-                let valorAtual = sel.value;
-                sel.innerHTML = '<option value="">SELECIONE...</option>';
-                policiais.forEach(p => {
-                    sel.innerHTML += `<option value="${p}" ${p === valorAtual ? 'selected' : ''}>${p}</option>`;
-                });
-            });
-
-            // Lógica do Chefe e Escalas Dinâmicas (conforme as regras anteriores)
-            let listaQH = [...operacionais];
-            let ativosGeral = policiais.length; 
+            // REGRA DO CHEFE
             const statusBox = document.getElementById('status_chefe');
-            
-            if (chefe !== "") {
-                if (ativosGeral > 7) {
+            let listaQH = [...ativosOperacionais];
+            if (chefe.trim() !== "") {
+                if (totalParaRegra > 7) {
                     statusBox.innerHTML = "STATUS: SUPERVISÃO (FORA DO Q.H)";
                     statusBox.className = "text-[9px] font-bold text-red-600 p-1 text-center uppercase";
                 } else {
@@ -181,11 +193,61 @@
                 }
             }
 
-            // Gerar Monitoramento/Portão/Noite (Script dinâmico aqui...)
-            const numDiv = ativosGeral > 6 ? 7 : 5;
-            
-            // Re-gerar as tabelas dinâmicas nos containers (container_mon, container_por, container_pq, container_qh)
-            // ... (A lógica de tempo permanece a mesma das versões anteriores, agora usando numDiv e listaQH)
+            const numDiv = totalParaRegra > 6 ? 7 : 5;
+
+            // GERAR POSTOS DIA (MONITORAMENTO E PORTÃO)
+            const diaContainers = ['container_mon', 'container_por'];
+            const labels = ['mon_camera_', 'portao_'];
+            diaContainers.forEach((id, idx) => {
+                const container = document.getElementById(id);
+                container.innerHTML = "";
+                let hD = new Date(); hD.setHours(8, 0, 0);
+                let minD = Math.floor(600 / numDiv);
+                for (let i = 0; i < numDiv; i++) {
+                    let inicio = formatarHora(hD);
+                    hD.setMinutes(hD.getMinutes() + minD);
+                    if(i === numDiv - 1) hD.setHours(18, 0, 0);
+                    let fim = formatarHora(hD);
+                    container.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
+                        <span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
+                        <input type="text" name="${labels[idx]}${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
+                    </div>`;
+                }
+            });
+
+            // PRÉ-QUARTO
+            const containerPQ = document.getElementById('container_pq');
+            containerPQ.innerHTML = "";
+            let hPQ = new Date(); hPQ.setHours(18, 0, 0);
+            let minPQ = Math.floor(240 / numDiv);
+            for (let i = 0; i < numDiv; i++) {
+                let inicio = formatarHora(hPQ);
+                hPQ.setMinutes(hPQ.getMinutes() + minPQ);
+                if(i === numDiv - 1) hPQ.setHours(22, 0, 0);
+                let fim = formatarHora(hPQ);
+                containerPQ.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
+                    <span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
+                    <input type="text" name="pq_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
+                </div>`;
+            }
+
+            // QUARTO DE HORA
+            const containerQH = document.getElementById('container_qh');
+            containerQH.innerHTML = "";
+            if (listaQH.length > 0) {
+                let minQH = Math.floor(480 / listaQH.length);
+                let hQH = new Date(); hQH.setHours(22, 0, 0);
+                listaQH.forEach((pol, i) => {
+                    let inicio = formatarHora(hQH);
+                    hQH.setMinutes(hQH.getMinutes() + minQH);
+                    if(i === listaQH.length - 1) hQH.setHours(6, 0, 0);
+                    let fim = formatarHora(hQH);
+                    containerQH.innerHTML += `<div class="flex items-center gap-2 border-b border-gray-800 pb-1">
+                        <span class="text-[9px] text-yellow-500 w-24">${inicio} - ${fim}</span>
+                        <input type="text" name="qh_p${i+1}" value="${pol}" class="bg-transparent text-white text-[11px] font-bold uppercase outline-none">
+                    </div>`;
+                });
+            }
         }
     </script>
 </body>
