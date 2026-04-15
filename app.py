@@ -106,18 +106,26 @@ def salvar():
             pdf.cell(0, 8, limpar_texto(f"{horario_qh} {nome_qh}"), border='B', ln=1)
 
     # --- 4. MISSÕES ---
-    pdf.ln(5); pdf.secao("OBSERVACOES E MISSOES")
+    # (Mantenha o início do seu código igual, apenas adicione/altere esta parte no método salvar)
+
+    # ... dentro do def salvar():
+
+    # 4. MISSÕES E ALMOÇO
+    pdf.ln(5); pdf.secao("OBSERVACOES, MISSOES E ALMOCO")
+    
+    # Missões normais
     for m in ['defensoria', 'itep', 'ctc', 'atendimento_medico', 'missao_externa', 'missao_interna']:
         conteudo = request.form.get(m, '')
         if conteudo:
             pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, f"{m.upper().replace('_', ' ')}:", ln=1)
             pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(conteudo), border='B')
 
-    filename = f"SGP24_{equipe}_{data_p}.pdf"
-    path = os.path.join(BASE_DIR, filename)
-    pdf.output(path)
-    return send_file(path, as_attachment=True)
+    # Novo: Almoço / Repouso no PDF
+    pdf.ln(2)
+    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 7, "ALMOCO / REPOUSO:", ln=1)
+    alm1 = request.form.get('almoco_1', '')
+    alm2 = request.form.get('almoco_2', '')
+    if alm1: pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(f"1) {alm1}"), border='B')
+    if alm2: pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(f"2) {alm2}"), border='B')
 
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    # (Mantenha o restante do código igual)
