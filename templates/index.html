@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#1e3a8a">
     <title>SGP-24 | Controle de Plantão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -18,8 +16,8 @@
     <form action="/salvar" method="POST" class="max-w-6xl mx-auto bg-white min-h-screen shadow-2xl overflow-hidden pb-20">
         
         <div class="bg-blue-900 p-4 text-white flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
-            <h1 class="text-xl font-black tracking-tighter uppercase text-center md:text-left">SGP-24 | CONTROLE OPERACIONAL</h1>
-            <div class="flex gap-2 justify-center text-black">
+            <h1 class="text-xl font-black tracking-tighter uppercase">SGP-24 | CONTROLE OPERACIONAL</h1>
+            <div class="flex gap-2 text-black">
                 <input type="text" name="equipe" placeholder="EQUIPE" class="p-2 rounded font-bold w-24 uppercase text-center" required>
                 <input type="date" name="data" class="p-2 rounded font-bold text-sm" required>
             </div>
@@ -39,7 +37,7 @@
                         <label class="block text-blue-900 font-black text-[10px] uppercase mb-1">Chefe de Equipe</label>
                         <div class="flex flex-col gap-2 md:flex-row">
                             <input type="text" id="chefe_nome" name="chefe_nome" oninput="calcularEscalaDinamica()" placeholder="NOME DO CHEFE" class="flex-1 p-2 border-b-2 border-blue-400 bg-transparent font-bold outline-none uppercase">
-                            <div id="status_chefe" class="text-[9px] font-bold text-blue-800 flex items-center px-2">Aguardando...</div>
+                            <div id="status_chefe_box" class="text-[10px] font-bold p-2 rounded bg-white border">Aguardando...</div>
                         </div>
                     </div>
                     <div class="space-y-2">
@@ -49,9 +47,9 @@
                             <input type="text" id="p{{i}}" name="p{{i}}" oninput="calcularEscalaDinamica()" placeholder="Nome" class="flex-1 p-1 text-sm border-b bg-transparent outline-none">
                             <select id="s{{i}}" name="s{{i}}" onchange="calcularEscalaDinamica()" class="font-bold text-blue-700 text-[10px] bg-transparent">
                                 <option value="24H">24H</option>
-                                <option value="ADM">ADM</option> <option value="12hD">12hD</option>
+                                <option value="ADM">ADM</option>
+                                <option value="12hD">12hD</option>
                                 <option value="12hN">12hN</option>
-                                <option value="DO 24h">DO 24h</option>
                             </select>
                         </div>
                         {% endfor %}
@@ -61,31 +59,13 @@
 
             <div id="aba2" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-3 rounded bg-blue-50">
-                        <h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção (Efetivo Ampliado)</h4>
-                        <textarea name="recepcao_nomes" placeholder="Nomes dos policiais escalados aqui..." class="w-full h-24 p-2 text-xs border-none bg-transparent uppercase outline-none"></textarea>
-                    </div>
-                    <div class="border p-3 rounded bg-gray-50">
-                        <h4 class="font-bold text-gray-700 mb-3 border-b uppercase text-xs text-center">Carceragem (Efetivo Ampliado)</h4>
-                        <textarea name="carceragem_nomes" placeholder="Nomes dos policiais escalados aqui..." class="w-full h-24 p-2 text-xs border-none bg-transparent uppercase outline-none"></textarea>
-                    </div>
                     <div class="border p-3 rounded bg-slate-100">
                         <h4 class="font-bold text-slate-800 mb-3 border-b uppercase text-xs text-center">Monitoramento: Câmeras</h4>
-                        {% for h in ['08:00 AS 10:00','10:00 AS 12:00','12:00 AS 14:00','14:00 AS 16:00','16:00 AS 18:00'] %}
-                        <div class="flex items-center gap-2 mb-2">
-                            <label class="text-[9px] font-bold w-20">{{h}}</label>
-                            <input type="text" name="mon_camera_{{loop.index}}" class="flex-1 p-1 text-xs border-b bg-transparent uppercase outline-none">
-                        </div>
-                        {% endfor %}
+                        <div id="container_mon" class="space-y-2"></div>
                     </div>
                     <div class="border p-3 rounded bg-yellow-50">
                         <h4 class="font-bold text-yellow-800 mb-3 border-b uppercase text-xs text-center">Abertura de Portão</h4>
-                        {% for h in ['08:00 AS 10:00','10:00 AS 12:00','12:00 AS 14:00','14:00 AS 16:00','16:00 AS 18:00'] %}
-                        <div class="flex items-center gap-2 mb-2">
-                            <label class="text-[9px] font-bold w-20">{{h}}</label>
-                            <input type="text" name="portao_{{loop.index}}" class="flex-1 p-1 text-xs border-b bg-transparent uppercase outline-none">
-                        </div>
-                        {% endfor %}
+                        <div id="container_por" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -93,7 +73,7 @@
             <div id="aba3" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="border p-4 rounded bg-white shadow-sm">
-                        <h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs">1. Pré-Quarto (18:00 às 22:00) - Divisão / 7</h4>
+                        <h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs">1. Pré-Quarto (18:00 às 22:00)</h4>
                         <div id="container_pq" class="space-y-2"></div>
                     </div>
                     <div class="border p-4 rounded bg-slate-900 text-white shadow-xl">
@@ -108,18 +88,21 @@
                     {% for m in ['defensoria','itep','ctc','atendimento_medico','missao_externa','missao_interna'] %}
                     <div class="p-3 border rounded bg-gray-50 uppercase shadow-sm">
                         <label class="text-[10px] font-black text-blue-800 uppercase block mb-1">{{m.replace('_',' ')}}</label>
-                        <textarea name="{{m}}" class="w-full h-20 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
+                        <textarea name="{{m}}" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
                     </div>
                     {% endfor %}
+                    <div class="p-3 border rounded bg-blue-50 uppercase shadow-sm md:col-span-2">
+                        <label class="text-[10px] font-black text-blue-900 uppercase block mb-1">Almoço / Repouso</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <textarea name="almoco_1" placeholder="1) ________________________" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
+                            <textarea name="almoco_2" placeholder="2) ________________________" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 p-2 bg-white border-t md:static md:p-0 md:border-0">
-            <button type="submit" class="w-full bg-blue-900 text-white py-4 font-black text-lg hover:bg-black uppercase tracking-widest transition-all rounded md:rounded-none">
-                Gerar PDF do Plantão
-            </button>
-        </div>
+        <button type="submit" class="fixed bottom-0 left-0 right-0 bg-blue-900 text-white py-4 font-black text-lg uppercase">Gerar PDF</button>
     </form>
 
     <script>
@@ -128,100 +111,106 @@
             document.querySelectorAll('button[type="button"]').forEach(b => b.classList.remove('tab-active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('btn-' + id).classList.add('tab-active');
-            window.scrollTo(0, 0);
-        }
-
-        function calcularEscalaDinamica() {
-            let aptos = []; // Para escala noturna
-            let ativosContagem = 0; // Para regra do chefe
-            
-            let chefe = document.getElementById('chefe_nome').value;
-
-            // Coleta efetivo e status
-            for (let i = 1; i <= 12; i++) {
-                let nome = document.getElementById('p' + i).value;
-                let status = document.getElementById('s' + i).value;
-                
-                if (nome.trim() !== "") {
-                    // Contagem para regra do chefe (ignora quem é ADM)
-                    if (status !== "ADM") {
-                        ativosContagem++;
-                        // Apto para escala noturna (ignora 12h Diurno)
-                        if (status !== "12hD") {
-                            aptos.push(nome.toUpperCase());
-                        }
-                    }
-                }
-            }
-
-            // Regra do Chefe
-            const statusChefeDiv = document.getElementById('status_chefe');
-            if (chefe.trim() !== "") {
-                if (ativosContagem > 7) {
-                    statusChefeDiv.innerHTML = "STATUS: SUPERVISÃO (FORA DO Q.H)";
-                    statusChefeDiv.className = "text-[9px] font-bold text-red-600 flex items-center px-2";
-                } else {
-                    statusChefeDiv.innerHTML = "STATUS: OPERACIONAL (INCLUÍDO NO Q.H)";
-                    statusChefeDiv.className = "text-[9px] font-bold text-green-600 flex items-center px-2";
-                    aptos.unshift(chefe.toUpperCase()); // Adiciona o chefe no início da lista noturna
-                }
-            }
-
-            // GERA PRE-QUARTO (Divisão por 7 Fixa)
-            const containerPQ = document.getElementById('container_pq');
-            containerPQ.innerHTML = "";
-            let horaPQ = new Date();
-            horaPQ.setHours(18, 0, 0);
-            let minPorPQ = Math.floor(240 / 7);
-
-            for (let i = 0; i < 7; i++) {
-                let inicio = formatarHora(horaPQ);
-                horaPQ.setMinutes(horaPQ.getMinutes() + minPorPQ);
-                if(i === 6) horaPQ.setHours(22,0,0); // Ajuste final
-                let fim = formatarHora(horaPQ);
-                let intervalo = inicio + " AS " + fim;
-                
-                let div = document.createElement('div');
-                div.className = "flex items-center gap-2 mb-2 border-b pb-1";
-                div.innerHTML = `
-                    <span class="text-[9px] font-black w-24">${intervalo}</span>
-                    <input type="hidden" name="pq_horario${i+1}" value="${intervalo}">
-                    <input type="text" name="pq_p${i+1}" class="flex-1 border-none text-xs bg-transparent uppercase outline-none" placeholder="Policial ${i+1}">
-                `;
-                containerPQ.appendChild(div);
-            }
-
-            // GERA QUARTO DE HORA (Dinâmico)
-            const containerQH = document.getElementById('container_qh');
-            containerQH.innerHTML = ""; 
-            if (aptos.length === 0) return;
-
-            let totalAptos = aptos.length;
-            let minutosPorTurno = Math.floor(480 / totalAptos);
-            let minutosExtras = 480 % totalAptos;
-            let horaAtual = new Date();
-            horaAtual.setHours(22, 0, 0);
-
-            for (let i = 0; i < totalAptos; i++) {
-                let inicio = formatarHora(horaAtual);
-                let duracao = minutosPorTurno + (i === totalAptos - 1 ? minutosExtras : 0);
-                horaAtual.setMinutes(horaAtual.getMinutes() + duracao);
-                let fim = formatarHora(horaAtual);
-                let intervaloTexto = inicio + " - " + fim;
-                
-                let div = document.createElement('div');
-                div.className = "flex items-center gap-2 mb-2 border-b border-gray-800 pb-1";
-                div.innerHTML = `
-                    <span class="text-[9px] font-mono text-yellow-500 font-bold w-24">${intervaloTexto}</span>
-                    <input type="hidden" name="qh_horario${i+1}" value="${intervaloTexto}">
-                    <input type="text" name="qh_p${i+1}" value="${aptos[i]}" class="flex-1 bg-transparent text-[11px] text-white uppercase font-bold outline-none">
-                `;
-                containerQH.appendChild(div);
-            }
         }
 
         function formatarHora(data) {
             return data.getHours().toString().padStart(2,'0') + ":" + data.getMinutes().toString().padStart(2,'0');
+        }
+
+        function calcularEscalaDinamica() {
+            let chefe = document.getElementById('chefe_nome').value.toUpperCase();
+            let ativosOperacionais = []; // Exclui ADM e Chefe
+            let totalAtivosGeral = 0; // Exclui apenas ADM
+
+            for (let i = 1; i <= 12; i++) {
+                let nome = document.getElementById('p' + i).value.toUpperCase();
+                let status = document.getElementById('s' + i).value;
+                if (nome.trim() !== "" && status !== "ADM") {
+                    totalAtivosGeral++;
+                    if (status !== "12hD") ativosOperacionais.push(nome);
+                }
+            }
+
+            // REGRA DO CHEFE (STATUS BOX)
+            const statusBox = document.getElementById('status_chefe_box');
+            let listaNoturna = [...ativosOperacionais];
+            if (chefe.trim() !== "") {
+                if (totalAtivosGeral > 7) {
+                    statusBox.innerHTML = "STATUS: SUPERVISÃO (FORA DO Q.H / POSTOS)";
+                    statusBox.className = "text-[10px] font-bold p-2 rounded bg-red-100 text-red-700 border border-red-200";
+                } else {
+                    statusBox.innerHTML = "STATUS: OPERACIONAL (INCLUÍDO NO Q.H)";
+                    statusBox.className = "text-[10px] font-bold p-2 rounded bg-green-100 text-green-700 border border-green-200";
+                    listaNoturna.unshift(chefe);
+                }
+            }
+
+            // GERAR POSTOS DIA (MONITORAMENTO E PORTÃO) - DIVISÃO POR 7 SE ATIVOS > 6
+            const numPostos = totalAtivosGeral > 6 ? 7 : 5;
+            const containers = ['container_mon', 'container_por'];
+            const labels = ['mon_camera_', 'portao_'];
+            
+            containers.forEach((id, idx) => {
+                const container = document.getElementById(id);
+                container.innerHTML = "";
+                let horaPosto = new Date();
+                horaPosto.setHours(8, 0, 0);
+                let minPosto = Math.floor(600 / numPostos); // 10 horas totais (08h às 18h)
+
+                for (let i = 0; i < numPostos; i++) {
+                    let inicio = formatarHora(horaPosto);
+                    horaPosto.setMinutes(horaPosto.getMinutes() + minPosto);
+                    if(i === numPostos - 1) horaPosto.setHours(18,0,0);
+                    let fim = formatarHora(horaPosto);
+                    
+                    let div = document.createElement('div');
+                    div.className = "flex items-center gap-2 mb-1 border-b pb-1";
+                    div.innerHTML = `<span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
+                                     <input type="text" name="${labels[idx]}${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">`;
+                    container.appendChild(div);
+                }
+            });
+
+            // PRÉ-QUARTO (MESMA LÓGICA DE DIVISÃO)
+            const containerPQ = document.getElementById('container_pq');
+            containerPQ.innerHTML = "";
+            let horaPQ = new Date();
+            horaPQ.setHours(18, 0, 0);
+            let minPQ = Math.floor(240 / numPostos);
+
+            for (let i = 0; i < numPostos; i++) {
+                let inicio = formatarHora(horaPQ);
+                horaPQ.setMinutes(horaPQ.getMinutes() + minPQ);
+                if(i === numPostos - 1) horaPQ.setHours(22,0,0);
+                let fim = formatarHora(horaPQ);
+                
+                let div = document.createElement('div');
+                div.className = "flex items-center gap-2 mb-1 border-b pb-1";
+                div.innerHTML = `<span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
+                                 <input type="text" name="pq_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">`;
+                containerPQ.appendChild(div);
+            }
+
+            // QUARTO DE HORA (DINÂMICO)
+            const containerQH = document.getElementById('container_qh');
+            containerQH.innerHTML = "";
+            if (listaNoturna.length > 0) {
+                let minQH = Math.floor(480 / listaNoturna.length);
+                let horaQH = new Date();
+                horaQH.setHours(22, 0, 0);
+
+                listaNoturna.forEach((pol, i) => {
+                    let inicio = formatarHora(horaQH);
+                    horaQH.setMinutes(horaQH.getMinutes() + minQH);
+                    if(i === listaNoturna.length - 1) horaQH.setHours(6,0,0);
+                    let fim = formatarHora(horaQH);
+                    let div = document.createElement('div');
+                    div.className = "flex items-center gap-2 border-b border-gray-800 pb-1";
+                    div.innerHTML = `<span class="text-[9px] text-yellow-500 w-24">${inicio} - ${fim}</span>
+                                     <input type="text" name="qh_p${i+1}" value="${pol}" class="bg-transparent text-white text-[11px] font-bold uppercase outline-none">`;
+                    containerQH.appendChild(div);
+                });
+            }
         }
     </script>
 </body>
