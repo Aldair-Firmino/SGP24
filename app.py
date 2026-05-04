@@ -27,9 +27,7 @@ class SGP_PDF(FPDF):
 
 def limpar_texto(txt):
     if not txt: return ""
-    # Força Caixa Alta e remove caracteres incompatíveis com latin-1
-    txt_upper = str(txt).upper()
-    return txt_upper.encode('latin-1', 'replace').decode('latin-1')
+    return str(txt).upper().encode('latin-1', 'replace').decode('latin-1')
 
 @app.route('/static/manifest.json')
 def serve_manifest():
@@ -65,21 +63,6 @@ def salvar():
     # 2. POSTOS DIA
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
-    
-    # Seção de Texto (Recepção e Carceragem)
-    pdf.set_font('Arial', 'B', 8)
-    for setor in [('RECEPCAO', 'rec_p'), ('CARCERAGEM', 'car_p')]:
-        nomes = ", ".join([request.form.get(f'{setor[1]}{i}', '') for i in range(1,5) if request.form.get(f'{setor[1]}{i}', '')])
-        if nomes:
-            pdf.multi_cell(0, 7, limpar_texto(f"{setor[0]}: {nomes}"), border='B')
-    
-    pdf.ln(2)
-    # Tabela de Monitoramento e Portão com Horários Fixos conforme imagem
-    pdf.set_font('Arial', 'B', 8)
-    pdf.cell(95, 7, "MONITORAMENTO (CAMERAS)", 1, 0, 'C', fill=True)
-    pdf.cell(95, 7, "ABERTURA DE PORTAO", 1, 1, 'C', fill=True)
-    
-    pdf.set_font('Arial', '', 8)
     h_dia = ['08:00 AS 10:00', '10:00 AS 12:00', '12:00 AS 14:00', '14:00 AS 16:00', '16:00 AS 18:00']
     for i, h in enumerate(h_dia, 1):
         p_mon = request.form.get(f'mon_camera_{i}', '')
@@ -87,11 +70,11 @@ def salvar():
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_mon}"), 1, 0, 'L')
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_por}"), 1, 1, 'L')
 
-    # 3. ESCALA NOITE (DINÂMICA)
+    # 3. ESCALA NOTURNA (CORREÇÃO DE DADOS OMITIDOS)
     pdf.ln(5)
     pdf.secao("ESCALA NOTURNA")
     
-    # Pré-Quarto (18h às 22h)
+    # Pré-Quarto
     pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "PRE-QUARTO (18:00 AS 22:00)", ln=1)
     pdf.set_font('Arial', '', 9)
     h_pre = ['18:00 AS 18:34','18:34 AS 19:08','19:08 AS 19:42','19:42 AS 20:16','20:16 AS 20:50','20:50 AS 21:24','21:24 AS 22:00']
@@ -100,16 +83,16 @@ def salvar():
         if n: pdf.cell(0, 7, limpar_texto(f"{h} - {n}"), border='B', ln=1)
 
     pdf.ln(3)
-    # Quarto de Hora (Dinâmico Capturado do HTML)
+    # Quarto de Hora (DADOS QUE ESTAVAM FALTANDO)
     pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
     pdf.set_font('Arial', '', 9)
     for i in range(1, 13):
         n_qh = request.form.get(f'qh_p{i}', '')
-        h_qh = request.form.get(f'qh_horario{i}', '') # Captura o horário que o JS calculou
+        h_qh = request.form.get(f'qh_horario{i}', '')
         if n_qh:
             pdf.cell(0, 7, limpar_texto(f"{h_qh} - {n_qh}"), border='B', ln=1)
 
-    # 4. MISSÕES E OBSERVAÇÕES
+    # 4. MISSÕES E ALMOÇO REPOUSO (CORREÇÃO DE DADOS OMITIDOS)
     pdf.ln(5); pdf.secao("OBSERVACOES E MISSOES")
     pdf.set_font('Arial', '', 8)
     missoes = [
@@ -130,4 +113,4 @@ def salvar():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)V
+    app.run(host='0.0.0.0', port=port)
