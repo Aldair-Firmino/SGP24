@@ -27,6 +27,7 @@ class SGP_PDF(FPDF):
 
 def limpar_texto(txt):
     if not txt: return ""
+    # Converte para MAIÚSCULAS e remove caracteres especiais
     return str(txt).upper().encode('latin-1', 'replace').decode('latin-1')
 
 @app.route('/static/manifest.json')
@@ -46,7 +47,7 @@ def salvar():
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.add_page()
     
-    # 1. EFETIVO
+    # --- 1. EFETIVO ---
     pdf.secao("RELACAO GERAL DE EFETIVO")
     chefe = request.form.get('chefe_nome', '')
     mat = request.form.get('chefe_mat', '')
@@ -60,7 +61,7 @@ def salvar():
         if nome:
             pdf.cell(0, 6, limpar_texto(f"{i}. {nome} [{status}]"), border='B', ln=1)
 
-    # 2. POSTOS DIA
+    # --- 2. POSTOS DIA ---
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
     h_dia = ['08:00 AS 10:00', '10:00 AS 12:00', '12:00 AS 14:00', '14:00 AS 16:00', '16:00 AS 18:00']
@@ -70,41 +71,61 @@ def salvar():
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_mon}"), 1, 0, 'L')
         pdf.cell(95, 7, limpar_texto(f"{h} - {p_por}"), 1, 1, 'L')
 
-    # 3. ESCALA NOTURNA (CORREÇÃO DE DADOS OMITIDOS)
+    # --- 3. ESCALA NOTURNA (CORREÇÃO DE DADOS VAZIOS) ---
     pdf.ln(5)
     pdf.secao("ESCALA NOTURNA")
     
-    # Pré-Quarto
-    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "PRE-QUARTO (18:00 AS 22:00)", ln=1)
+    # Pré-Quarto (18:00 às 22:00)
+    pdf.set_font('Arial', 'B', 9)
+    pdf.cell(0, 8, "PRE-QUARTO (18:00 AS 22:00)", ln=1)
     pdf.set_font('Arial', '', 9)
     h_pre = ['18:00 AS 18:34','18:34 AS 19:08','19:08 AS 19:42','19:42 AS 20:16','20:16 AS 20:50','20:50 AS 21:24','21:24 AS 22:00']
     for i, h in enumerate(h_pre, 1):
-        n = request.form.get(f'pre_p{i}', '')
-        if n: pdf.cell(0, 7, limpar_texto(f"{h} - {n}"), border='B', ln=1)
+        n_pre = request.form.get(f'pre_p{i}', '')
+        if n_pre:
+            pdf.cell(0, 7, limpar_texto(f"{h} - {n_pre}"), border='B', ln=1)
 
     pdf.ln(3)
-    # Quarto de Hora (DADOS QUE ESTAVAM FALTANDO)
-    pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
+    # Quarto de Hora (22:00 às 06:00) - CAPTURA DINÂMICA
+    pdf.set_font('Arial', 'B', 9)
+    pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
     pdf.set_font('Arial', '', 9)
+    
+    # Loop para capturar até 12 turnos calculados pelo JavaScript
     for i in range(1, 13):
-        n_qh = request.form.get(f'qh_p{i}', '')
-        h_qh = request.form.get(f'qh_horario{i}', '')
-        if n_qh:
-            pdf.cell(0, 7, limpar_texto(f"{h_qh} - {n_qh}"), border='B', ln=1)
+        # O campo 'qh_horarioX' armazena o horário calculado na tela
+        horario = request.form.get(f'qh_horario{i}', '')
+        # O campo 'qh_pX' armazena o nome do policial naquele horário
+        nome_qh = request.form.get(f'qh_p{i}', '')
+        
+        if nome_qh:
+            # Se o horário vier vazio do JS, deixamos apenas o nome
+            texto_linha = f"{horario} - {nome_qh}" if horario else f"- {nome_qh}"
+            pdf.cell(0, 7, limpar_texto(texto_linha), border='B', ln=1)
 
-    # 4. MISSÕES E ALMOÇO REPOUSO (CORREÇÃO DE DADOS OMITIDOS)
-    pdf.ln(5); pdf.secao("OBSERVACOES E MISSOES")
+    # --- 4. OBSERVAÇÕES, MISSÕES E ALMOÇO ---
+    pdf.ln(5)
+    pdf.secao("OBSERVACOES E MISSOES")
     pdf.set_font('Arial', '', 8)
-    missoes = [
-        ('DEFENSORIA', 'defensoria'), ('ITEP', 'itep'), ('CTC', 'ctc'),
-        ('ATENDIMENTO MEDICO', 'atendimento_medico'), ('MISSAO EXTERNA', 'missao_externa'),
-        ('MISSAO INTERNA', 'missao_interna'), ('ALMOCO / REPOUSO', 'almoco_repouso')
+    
+    campos_missoes = [
+        ('DEFENSORIA', 'defensoria'), 
+        ('ITEP', 'itep'), 
+        ('CTC', 'ctc'),
+        ('ATENDIMENTO MEDICO', 'atendimento_medico'), 
+        ('MISSAO EXTERNA', 'missao_externa'),
+        ('MISSAO INTERNA', 'missao_interna'), 
+        ('ALMOCO / REPOUSO', 'almoco_repouso') # CAMPO ESPECÍFICO DE ALMOÇO
     ]
-    for label, field in missoes:
-        cont = request.form.get(field, '')
-        if cont:
-            pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, limpar_texto(label), ln=1)
-            pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(cont), border='B')
+    
+    for label, id_campo in campos_missoes:
+        conteudo = request.form.get(id_campo, '')
+        if conteudo:
+            pdf.set_font('Arial', 'B', 8)
+            pdf.cell(0, 6, limpar_texto(label), ln=1)
+            pdf.set_font('Arial', '', 8)
+            pdf.multi_cell(0, 5, limpar_texto(conteudo), border='B')
+            pdf.ln(1)
 
     filename = f"SGP24_{equipe}_{data_p}.pdf"
     path = os.path.join(BASE_DIR, filename)
@@ -114,3 +135,4 @@ def salvar():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+    
