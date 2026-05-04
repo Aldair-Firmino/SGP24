@@ -138,10 +138,7 @@
 
                     <div class="p-4 border-2 border-blue-200 rounded-lg bg-white shadow-md md:col-span-2">
                         <h4 class="font-black text-blue-900 border-b-2 border-blue-100 mb-4 uppercase text-xs text-center">ALMOÇO / REPOUSO</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <textarea name="almoco_1" placeholder="1) ___________________________________" class="w-full h-12 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
-                            <textarea name="almoco_2" placeholder="2) ___________________________________" class="w-full h-12 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
-                        </div>
+                        <textarea name="almoco_repouso" placeholder="Digite os nomes para Almoço/Repouso..." class="w-full h-24 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
                     </div>
                 </div>
             </div>
@@ -179,7 +176,6 @@
                 }
             }
 
-            // REGRA DO CHEFE
             const statusBox = document.getElementById('status_chefe');
             let listaQH = [...ativosOperacionais];
             if (chefe.trim() !== "") {
@@ -208,8 +204,10 @@
                     hD.setMinutes(hD.getMinutes() + minD);
                     if(i === numDiv - 1) hD.setHours(18, 0, 0);
                     let fim = formatarHora(hD);
+                    let intervaloTexto = `${inicio} AS ${fim}`;
                     container.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
-                        <span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
+                        <span class="text-[9px] font-black w-24">${intervaloTexto}</span>
+                        <input type="hidden" name="${labels[idx]}horario${i+1}" value="${intervaloTexto}">
                         <input type="text" name="${labels[idx]}${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
                     </div>`;
                 }
@@ -225,9 +223,11 @@
                 hPQ.setMinutes(hPQ.getMinutes() + minPQ);
                 if(i === numDiv - 1) hPQ.setHours(22, 0, 0);
                 let fim = formatarHora(hPQ);
+                let intervaloTexto = `${inicio} AS ${fim}`;
                 containerPQ.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
-                    <span class="text-[9px] font-black w-24">${inicio} AS ${fim}</span>
-                    <input type="text" name="pq_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
+                    <span class="text-[9px] font-black w-24">${intervaloTexto}</span>
+                    <input type="hidden" name="pre_horario${i+1}" value="${intervaloTexto}">
+                    <input type="text" name="pre_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
                 </div>`;
             }
 
@@ -242,8 +242,10 @@
                     hQH.setMinutes(hQH.getMinutes() + minQH);
                     if(i === listaQH.length - 1) hQH.setHours(6, 0, 0);
                     let fim = formatarHora(hQH);
+                    let intervaloTexto = `${inicio} - ${fim}`;
                     containerQH.innerHTML += `<div class="flex items-center gap-2 border-b border-gray-800 pb-1">
-                        <span class="text-[9px] text-yellow-500 w-24">${inicio} - ${fim}</span>
+                        <span class="text-[9px] text-yellow-500 w-24">${intervaloTexto}</span>
+                        <input type="hidden" name="qh_horario${i+1}" value="${intervaloTexto}">
                         <input type="text" name="qh_p${i+1}" value="${pol}" class="bg-transparent text-white text-[11px] font-bold uppercase outline-none">
                     </div>`;
                 });
