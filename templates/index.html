@@ -33,6 +33,7 @@
         </div>
 
         <div class="p-4 md:p-6">
+            <!-- ABA 1: EFETIVO -->
             <div id="aba1" class="tab-content active">
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200 mb-6 shadow-sm">
@@ -68,20 +69,9 @@
                 </div>
             </div>
 
+            <!-- ABA 2: POSTOS DIA -->
             <div id="aba2" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-3 rounded bg-green-50 md:col-span-2 shadow-sm">
-                        <h4 class="font-bold text-green-900 mb-3 border-b uppercase text-xs text-center">Monitoramento Manhã (06:00 às 08:00)</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-                            {% for h in ['06:00 - 06:30','06:30 - 07:00','07:00 - 07:30','07:30 - 08:00'] %}
-                            <div class="flex items-center gap-2 border-b pb-1">
-                                <span class="text-[9px] font-black w-20">{{h}}</span>
-                                <input type="text" name="mon_manha_{{loop.index}}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
                     <div class="border p-3 rounded bg-blue-50 shadow-sm">
                         <h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção</h4>
                         <div class="space-y-2">
@@ -114,6 +104,7 @@
                 </div>
             </div>
 
+            <!-- ABA 3: POSTOS NOITE -->
             <div id="aba3" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="border p-4 rounded bg-white shadow-sm">
@@ -127,6 +118,7 @@
                 </div>
             </div>
 
+            <!-- ABA 4: MISSÕES -->
             <div id="aba4" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for m in ['defensoria','itep','ctc','atendimento_medico','missao_externa','missao_interna'] %}
@@ -176,6 +168,7 @@
                 }
             }
 
+            // REGRA DO CHEFE (QUARTO DE HORA)
             const statusBox = document.getElementById('status_chefe');
             let listaQH = [...ativosOperacionais];
             if (chefe.trim() !== "") {
@@ -185,7 +178,7 @@
                 } else {
                     statusBox.innerHTML = "STATUS: OPERACIONAL (NO Q.H)";
                     statusBox.className = "text-[9px] font-bold text-green-600 p-1 text-center uppercase";
-                    listaQH.unshift(chefe);
+                    listaQH.unshift(chefe); // Adiciona o chefe apenas se for <= 7 policiais
                 }
             }
 
