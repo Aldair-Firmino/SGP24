@@ -33,7 +33,6 @@
         </div>
 
         <div class="p-4 md:p-6">
-            <!-- ABA 1: EFETIVO -->
             <div id="aba1" class="tab-content active">
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200 mb-6 shadow-sm">
@@ -46,12 +45,9 @@
                                     <input type="text" name="chefe_mat" placeholder="000.000-0" class="w-28 bg-transparent text-sm outline-none font-bold uppercase text-right">
                                 </div>
                             </div>
-                            <div id="status_chefe" class="text-[9px] font-black p-1 rounded bg-white/60 text-center uppercase tracking-tighter border border-blue-100">
-                                Aguardando Efetivo...
-                            </div>
+                            <div id="status_chefe" class="text-[9px] font-black p-1 rounded bg-white/60 text-center uppercase tracking-tighter border border-blue-100">Aguardando Efetivo...</div>
                         </div>
                     </div>
-
                     <div class="space-y-2">
                         {% for i in range(1, 13) %}
                         <div class="flex gap-2 items-center bg-gray-50 p-2 rounded border border-gray-200 uppercase text-xs">
@@ -69,76 +65,47 @@
                 </div>
             </div>
 
-            <!-- ABA 2: POSTOS DIA -->
             <div id="aba2" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-3 rounded bg-blue-50 shadow-sm">
-                        <h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção</h4>
-                        <div class="space-y-2">
-                            <input type="text" name="rec_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="rec_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="rec_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="rec_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
+                    <div class="border p-3 rounded bg-green-50 md:col-span-2 shadow-sm">
+                        <h4 class="font-bold text-green-900 mb-3 border-b uppercase text-xs text-center">Monitoramento Manhã (06:00 às 08:00)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                            {% for h in ['06:00 - 06:30','06:30 - 07:00','07:00 - 07:30','07:30 - 08:00'] %}
+                            <div class="flex items-center gap-2 border-b pb-1">
+                                <span class="text-[9px] font-black w-20">{{h}}</span>
+                                <input type="text" name="mon_manha_{{loop.index}}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
-
-                    <div class="border p-3 rounded bg-gray-50 shadow-sm">
-                        <h4 class="font-bold text-gray-700 mb-3 border-b uppercase text-xs text-center">Carceragem</h4>
-                        <div class="space-y-2">
-                            <input type="text" name="car_p1" placeholder="POLICIAL 1" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="car_p2" placeholder="POLICIAL 2" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="car_p3" placeholder="POLICIAL 3" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                            <input type="text" name="car_p4" placeholder="POLICIAL 4" class="w-full p-1 text-xs border-b bg-transparent uppercase outline-none">
-                        </div>
+                    <div class="border p-3 rounded bg-blue-50 shadow-sm"><h4 class="font-bold text-blue-900 mb-3 border-b uppercase text-xs text-center">Recepção</h4>
+                        {% for i in range(1, 5) %}<input type="text" name="rec_p{{i}}" placeholder="POLICIAL {{i}}" class="w-full p-1 mb-1 text-xs border-b bg-transparent uppercase outline-none">{% endfor %}
                     </div>
-
-                    <div class="border p-3 rounded bg-slate-100 shadow-sm">
-                        <h4 class="font-bold text-slate-800 mb-3 border-b uppercase text-xs text-center">Monitoramento: Câmeras</h4>
-                        <div id="container_mon" class="space-y-2"></div>
+                    <div class="border p-3 rounded bg-gray-50 shadow-sm"><h4 class="font-bold text-gray-700 mb-3 border-b uppercase text-xs text-center">Carceragem</h4>
+                        {% for i in range(1, 5) %}<input type="text" name="car_p{{i}}" placeholder="POLICIAL {{i}}" class="w-full p-1 mb-1 text-xs border-b bg-transparent uppercase outline-none">{% endfor %}
                     </div>
-
-                    <div class="border p-3 rounded bg-yellow-50 shadow-sm">
-                        <h4 class="font-bold text-yellow-800 mb-3 border-b uppercase text-xs text-center">Abertura de Portão</h4>
-                        <div id="container_por" class="space-y-2"></div>
-                    </div>
+                    <div class="border p-3 rounded bg-slate-100 shadow-sm"><h4 class="font-bold text-slate-800 mb-3 border-b uppercase text-xs text-center text-blue-800">Monitoramento: Câmeras</h4><div id="container_mon" class="space-y-2"></div></div>
+                    <div class="border p-3 rounded bg-yellow-50 shadow-sm"><h4 class="font-bold text-yellow-800 mb-3 border-b uppercase text-xs text-center">Abertura de Portão</h4><div id="container_por" class="space-y-2"></div></div>
                 </div>
             </div>
 
-            <!-- ABA 3: POSTOS NOITE -->
             <div id="aba3" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-4 rounded bg-white shadow-sm">
-                        <h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs text-center">Pré-Quarto (18:00 às 22:00)</h4>
-                        <div id="container_pq" class="space-y-2"></div>
-                    </div>
-                    <div class="border p-4 rounded bg-slate-900 text-white shadow-xl">
-                        <h4 class="font-bold text-yellow-400 border-b border-gray-700 mb-3 uppercase text-center text-xs">Quarto de Hora (22:00 às 06:00)</h4>
-                        <div id="container_qh" class="space-y-2"></div>
-                    </div>
+                    <div class="border p-4 rounded bg-white shadow-sm"><h4 class="font-bold text-blue-900 border-b mb-3 uppercase text-xs text-center">Pré-Quarto (18:00 às 22:00)</h4><div id="container_pq" class="space-y-2"></div></div>
+                    <div class="border p-4 rounded bg-slate-900 text-white shadow-xl"><h4 class="font-bold text-yellow-400 border-b border-gray-700 mb-3 uppercase text-center text-xs">Quarto de Hora (22:00 às 06:00)</h4><div id="container_qh" class="space-y-2"></div></div>
                 </div>
             </div>
 
-            <!-- ABA 4: MISSÕES -->
             <div id="aba4" class="tab-content">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for m in ['defensoria','itep','ctc','atendimento_medico','missao_externa','missao_interna'] %}
-                    <div class="p-3 border rounded bg-gray-50 uppercase shadow-sm">
-                        <label class="text-[10px] font-black text-blue-800 block mb-1 uppercase">{{m.replace('_',' ')}}</label>
-                        <textarea name="{{m}}" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea>
-                    </div>
+                    <div class="p-3 border rounded bg-gray-50 uppercase shadow-sm"><label class="text-[10px] font-black text-blue-800 block mb-1 uppercase">{{m.replace('_',' ')}}</label><textarea name="{{m}}" class="w-full h-16 text-xs p-2 border-none bg-white rounded outline-none uppercase"></textarea></div>
                     {% endfor %}
-
-                    <div class="p-4 border-2 border-blue-200 rounded-lg bg-white shadow-md md:col-span-2">
-                        <h4 class="font-black text-blue-900 border-b-2 border-blue-100 mb-4 uppercase text-xs text-center">ALMOÇO / REPOUSO</h4>
-                        <textarea name="almoco_repouso" placeholder="Digite os nomes para Almoço/Repouso..." class="w-full h-24 text-sm p-2 border-b bg-transparent outline-none uppercase resize-none"></textarea>
-                    </div>
+                    <div class="p-4 border-2 border-blue-200 rounded-lg bg-white shadow-md md:col-span-2"><h4 class="font-black text-blue-900 border-b-2 border-blue-100 mb-4 uppercase text-xs text-center">ALMOÇO / REPOUSO</h4><textarea name="almoco_repouso" placeholder="Digite os nomes..." class="w-full h-24 text-sm p-2 bg-transparent outline-none uppercase resize-none"></textarea></div>
                 </div>
             </div>
         </div>
-
-        <button type="submit" class="fixed bottom-0 left-0 right-0 bg-blue-900 text-white py-4 font-black text-lg uppercase tracking-widest transition-all hover:bg-black">
-            Gerar PDF do Plantão
-        </button>
+        <button type="submit" class="fixed bottom-0 left-0 right-0 bg-blue-900 text-white py-4 font-black text-lg uppercase tracking-widest transition-all hover:bg-black">Gerar PDF do Plantão</button>
     </form>
 
     <script>
@@ -149,15 +116,11 @@
             document.getElementById('btn-' + id).classList.add('tab-active');
             window.scrollTo(0, 0);
         }
-
-        function formatarHora(data) {
-            return data.getHours().toString().padStart(2,'0') + ":" + data.getMinutes().toString().padStart(2,'0');
-        }
+        function formatarHora(data) { return data.getHours().toString().padStart(2,'0') + ":" + data.getMinutes().toString().padStart(2,'0'); }
 
         function calcularEscalaDinamica() {
             let chefe = document.getElementById('chefe_nome').value.toUpperCase();
-            let ativosOperacionais = []; 
-            let totalParaRegra = 0; 
+            let ativosOperacionais = []; let totalParaRegra = 0; 
 
             for (let i = 1; i <= 12; i++) {
                 let nome = document.getElementById('p' + i).value.toUpperCase();
@@ -168,79 +131,52 @@
                 }
             }
 
-            // REGRA DO CHEFE (QUARTO DE HORA)
             const statusBox = document.getElementById('status_chefe');
             let listaQH = [...ativosOperacionais];
+            // REGRA: Se policiais + chefe > 7, Chefe fora do Q.H
+            let efetivoTotalComChefe = chefe.trim() !== "" ? totalParaRegra + 1 : totalParaRegra;
+
             if (chefe.trim() !== "") {
-                if (totalParaRegra > 7) {
+                if (efetivoTotalComChefe > 7) {
                     statusBox.innerHTML = "STATUS: SUPERVISÃO (FORA DO Q.H)";
                     statusBox.className = "text-[9px] font-bold text-red-600 p-1 text-center uppercase";
                 } else {
                     statusBox.innerHTML = "STATUS: OPERACIONAL (NO Q.H)";
                     statusBox.className = "text-[9px] font-bold text-green-600 p-1 text-center uppercase";
-                    listaQH.unshift(chefe); // Adiciona o chefe apenas se for <= 7 policiais
+                    listaQH.unshift(chefe);
                 }
             }
 
             const numDiv = totalParaRegra > 6 ? 7 : 5;
 
-            // GERAR POSTOS DIA (MONITORAMENTO E PORTÃO)
-            const diaContainers = ['container_mon', 'container_por'];
-            const labels = ['mon_camera_', 'portao_'];
-            diaContainers.forEach((id, idx) => {
-                const container = document.getElementById(id);
-                container.innerHTML = "";
-                let hD = new Date(); hD.setHours(8, 0, 0);
-                let minD = Math.floor(600 / numDiv);
+            // MONITORAMENTO E PORTÃO
+            ['container_mon', 'container_por'].forEach((id, idx) => {
+                const container = document.getElementById(id); container.innerHTML = "";
+                let hD = new Date(); hD.setHours(8, 0, 0); let minD = Math.floor(600 / numDiv);
                 for (let i = 0; i < numDiv; i++) {
-                    let inicio = formatarHora(hD);
-                    hD.setMinutes(hD.getMinutes() + minD);
-                    if(i === numDiv - 1) hD.setHours(18, 0, 0);
-                    let fim = formatarHora(hD);
-                    let intervaloTexto = `${inicio} AS ${fim}`;
-                    container.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
-                        <span class="text-[9px] font-black w-24">${intervaloTexto}</span>
-                        <input type="hidden" name="${labels[idx]}horario${i+1}" value="${intervaloTexto}">
-                        <input type="text" name="${labels[idx]}${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
-                    </div>`;
+                    let inicio = formatarHora(hD); hD.setMinutes(hD.getMinutes() + minD); if(i === numDiv - 1) hD.setHours(18, 0, 0);
+                    let fim = formatarHora(hD); let intervalo = `${inicio} AS ${fim}`;
+                    container.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1"><span class="text-[9px] font-black w-24">${intervalo}</span><input type="hidden" name="${idx==0?'mon_camera_':'portao_'}horario${i+1}" value="${intervalo}"><input type="text" name="${idx==0?'mon_camera_':'portao_'}${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial"></div>`;
                 }
             });
 
             // PRÉ-QUARTO
-            const containerPQ = document.getElementById('container_pq');
-            containerPQ.innerHTML = "";
-            let hPQ = new Date(); hPQ.setHours(18, 0, 0);
-            let minPQ = Math.floor(240 / numDiv);
+            const containerPQ = document.getElementById('container_pq'); containerPQ.innerHTML = "";
+            let hPQ = new Date(); hPQ.setHours(18, 0, 0); let minPQ = Math.floor(240 / numDiv);
             for (let i = 0; i < numDiv; i++) {
-                let inicio = formatarHora(hPQ);
-                hPQ.setMinutes(hPQ.getMinutes() + minPQ);
-                if(i === numDiv - 1) hPQ.setHours(22, 0, 0);
-                let fim = formatarHora(hPQ);
-                let intervaloTexto = `${inicio} AS ${fim}`;
-                containerPQ.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1">
-                    <span class="text-[9px] font-black w-24">${intervaloTexto}</span>
-                    <input type="hidden" name="pre_horario${i+1}" value="${intervaloTexto}">
-                    <input type="text" name="pre_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial">
-                </div>`;
+                let inicio = formatarHora(hPQ); hPQ.setMinutes(hPQ.getMinutes() + minPQ); if(i === numDiv - 1) hPQ.setHours(22, 0, 0);
+                let fim = formatarHora(hPQ); let intervalo = `${inicio} AS ${fim}`;
+                containerPQ.innerHTML += `<div class="flex items-center gap-2 mb-1 border-b pb-1"><span class="text-[9px] font-black w-24">${intervalo}</span><input type="hidden" name="pre_horario${i+1}" value="${intervalo}"><input type="text" name="pre_p${i+1}" class="flex-1 text-xs uppercase outline-none bg-transparent" placeholder="Policial"></div>`;
             }
 
             // QUARTO DE HORA
-            const containerQH = document.getElementById('container_qh');
-            containerQH.innerHTML = "";
+            const containerQH = document.getElementById('container_qh'); containerQH.innerHTML = "";
             if (listaQH.length > 0) {
-                let minQH = Math.floor(480 / listaQH.length);
-                let hQH = new Date(); hQH.setHours(22, 0, 0);
+                let minQH = Math.floor(480 / listaQH.length); let hQH = new Date(); hQH.setHours(22, 0, 0);
                 listaQH.forEach((pol, i) => {
-                    let inicio = formatarHora(hQH);
-                    hQH.setMinutes(hQH.getMinutes() + minQH);
-                    if(i === listaQH.length - 1) hQH.setHours(6, 0, 0);
-                    let fim = formatarHora(hQH);
-                    let intervaloTexto = `${inicio} - ${fim}`;
-                    containerQH.innerHTML += `<div class="flex items-center gap-2 border-b border-gray-800 pb-1">
-                        <span class="text-[9px] text-yellow-500 w-24">${intervaloTexto}</span>
-                        <input type="hidden" name="qh_horario${i+1}" value="${intervaloTexto}">
-                        <input type="text" name="qh_p${i+1}" value="${pol}" class="bg-transparent text-white text-[11px] font-bold uppercase outline-none">
-                    </div>`;
+                    let inicio = formatarHora(hQH); hQH.setMinutes(hQH.getMinutes() + minQH); if(i === listaQH.length - 1) hQH.setHours(6, 0, 0);
+                    let fim = formatarHora(hQH); let intervalo = `${inicio} - ${fim}`;
+                    containerQH.innerHTML += `<div class="flex items-center gap-2 border-b border-gray-800 pb-1"><span class="text-[9px] text-yellow-500 w-24">${intervalo}</span><input type="hidden" name="qh_horario${i+1}" value="${intervalo}"><input type="text" name="qh_p${i+1}" value="${pol}" class="bg-transparent text-white text-[11px] font-bold uppercase outline-none"></div>`;
                 });
             }
         }
