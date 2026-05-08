@@ -27,7 +27,6 @@ class SGP_PDF(FPDF):
 
 def limpar_texto(txt):
     if not txt: return ""
-    # Força Caixa Alta e trata codificação para PDF
     return str(txt).upper().encode('latin-1', 'replace').decode('latin-1')
 
 @app.route('/static/manifest.json')
@@ -40,7 +39,6 @@ def index():
 
 @app.route('/salvar', methods=['POST'])
 def salvar():
-    # Captura Equipe e Data
     equipe = request.form.get('equipe', 'ALFA').upper()
     data_p = request.form.get('data', '')
     
@@ -48,7 +46,7 @@ def salvar():
     pdf.set_auto_page_break(auto=True, margin=20)
     pdf.add_page()
     
-    # --- 1. EFETIVO ---
+    # 1. EFETIVO
     pdf.secao("RELACAO GERAL DE EFETIVO")
     chefe = request.form.get('chefe_nome', '')
     mat = request.form.get('chefe_mat', '')
@@ -56,78 +54,78 @@ def salvar():
     pdf.cell(0, 7, limpar_texto(f"CHEFE DE EQUIPE: {chefe} | MAT: {mat}"), border='B', ln=1)
     
     pdf.set_font('Arial', '', 9)
-    for i in range(1, 11):
+    for i in range(1, 13):
         nome = request.form.get(f'p{i}', '')
         status = request.form.get(f's{i}', '24H')
         if nome:
             pdf.cell(0, 6, limpar_texto(f"{i}. {nome} [{status}]"), border='B', ln=1)
 
-    # --- 2. POSTOS DIA ---
+    # 2. MONITORAMENTO MANHÃ (RESTAURADO)
+    pdf.ln(5)
+    pdf.secao("MONITORAMENTO MANHA (06:00 AS 08:00)")
+    pdf.set_font('Arial', '', 8)
+    h_manha = ['06:00 - 06:30','06:30 - 07:00','07:00 - 07:30','07:30 - 08:00']
+    for i, h in enumerate(h_manha, 1):
+        pol = request.form.get(f'mon_manha_{i}', '')
+        if pol:
+            pdf.cell(0, 7, limpar_texto(f"{h} - {pol}"), border='B', ln=1)
+
+    # 3. POSTOS DIA
     pdf.ln(5)
     pdf.secao("POSTOS DE SERVICO (DIA)")
     
-    # Recepção e Carceragem (Captura os 4 campos de cada)
+    # Recepção e Carceragem
     pdf.set_font('Arial', 'B', 8)
-    rec_nomes = ", ".join([request.form.get(f'rec_p{i}', '') for i in range(1, 5) if request.form.get(f'rec_p{i}', '')])
-    car_nomes = ", ".join([request.form.get(f'car_p{i}', '') for i in range(1, 5) if request.form.get(f'car_p{i}', '')])
-    
-    if rec_nomes: pdf.multi_cell(0, 6, limpar_texto(f"RECEPCAO: {rec_nomes}"), border='B')
-    if car_nomes: pdf.multi_cell(0, 6, limpar_texto(f"CARCERAGEM: {car_nomes}"), border='B')
+    rec = ", ".join([request.form.get(f'rec_p{i}', '') for i in range(1, 5) if request.form.get(f'rec_p{i}', '')])
+    car = ", ".join([request.form.get(f'car_p{i}', '') for i in range(1, 5) if request.form.get(f'car_p{i}', '')])
+    if rec: pdf.multi_cell(0, 6, limpar_texto(f"RECEPCAO: {rec}"), border='B')
+    if car: pdf.multi_cell(0, 6, limpar_texto(f"CARCERAGEM: {car}"), border='B')
     pdf.ln(2)
 
     # Monitoramento e Portão
     pdf.set_font('Arial', 'B', 8)
     pdf.cell(95, 7, "MONITORAMENTO (CAMERAS)", 1, 0, 'C', fill=True)
     pdf.cell(95, 7, "ABERTURA DE PORTAO", 1, 1, 'C', fill=True)
-    
     pdf.set_font('Arial', '', 8)
-    h_dia = ['08:00 AS 10:00', '10:00 AS 12:00', '12:00 AS 14:00', '14:00 AS 16:00', '16:00 AS 18:00']
-    for i, h in enumerate(h_dia, 1):
+    for i in range(1, 8):
+        h_dia = request.form.get(f'mon_camera_horario{i}', '')
         p_mon = request.form.get(f'mon_camera_{i}', '')
         p_por = request.form.get(f'portao_{i}', '')
-        pdf.cell(95, 7, limpar_texto(f"{h} - {p_mon}"), 1, 0, 'L')
-        pdf.cell(95, 7, limpar_texto(f"{h} - {p_por}"), 1, 1, 'L')
+        if p_mon or p_por:
+            pdf.cell(95, 7, limpar_texto(f"{h_dia} - {p_mon}"), 1, 0, 'L')
+            pdf.cell(95, 7, limpar_texto(f"{h_dia} - {p_por}"), 1, 1, 'L')
 
-    # --- 3. ESCALA NOTURNA ---
+    # 4. ESCALA NOTURNA
     pdf.ln(5)
     pdf.secao("ESCALA NOTURNA")
     
     # Pré-Quarto
     pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "PRE-QUARTO (18:00 AS 22:00)", ln=1)
     pdf.set_font('Arial', '', 9)
-    h_pre = ['18:00 AS 18:34','18:34 AS 19:08','19:08 AS 19:42','19:42 AS 20:16','20:16 AS 20:50','20:50 AS 21:24','21:24 AS 22:00']
-    for i, h in enumerate(h_pre, 1):
+    for i in range(1, 8):
+        h_pre = request.form.get(f'pre_horario{i}', '')
         n_pre = request.form.get(f'pre_p{i}', '')
-        if n_pre: pdf.cell(0, 7, limpar_texto(f"{h} - {n_pre}"), border='B', ln=1)
+        if n_pre:
+            pdf.cell(0, 7, limpar_texto(f"{h_pre} - {n_pre}"), border='B', ln=1)
 
     pdf.ln(3)
-    # Quarto de Hora (Dinâmico)
+    # Quarto de Hora
     pdf.set_font('Arial', 'B', 9); pdf.cell(0, 8, "QUARTO DE HORA (22:00 AS 06:00)", ln=1)
     pdf.set_font('Arial', '', 9)
-    
-    # IMPORTANTE: Captura os inputs qh_horarioX e qh_pX gerados pelo JavaScript
     for i in range(1, 13):
         h_qh = request.form.get(f'qh_horario{i}', '')
         n_qh = request.form.get(f'qh_p{i}', '')
         if n_qh:
             pdf.cell(0, 7, limpar_texto(f"{h_qh} - {n_qh}"), border='B', ln=1)
 
-    # --- 4. OBSERVAÇÕES E MISSÕES ---
+    # 5. MISSÕES E ALMOÇO
     pdf.ln(5)
     pdf.secao("OBSERVACOES E MISSOES")
-    
-    missoes = [
-        ('DEFENSORIA', 'defensoria'), ('ITEP', 'itep'), ('CTC', 'ctc'),
-        ('ATENDIMENTO MEDICO', 'atendimento_medico'), ('MISSAO EXTERNA', 'missao_externa'),
-        ('MISSAO INTERNA', 'missao_interna'), ('ALMOCO / REPOUSO', 'almoco_repouso')
-    ]
-    
-    for label, field in missoes:
-        conteudo = request.form.get(field, '')
-        if conteudo:
+    for label, field in [('DEFENSORIA','defensoria'),('ITEP','itep'),('CTC','ctc'),('MEDICO','atendimento_medico'),('EXTERNA','missao_externa'),('INTERNA','missao_interna'),('ALMOCO / REPOUSO','almoco_repouso')]:
+        cont = request.form.get(field, '')
+        if cont:
             pdf.set_font('Arial', 'B', 8); pdf.cell(0, 6, limpar_texto(label), ln=1)
-            pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(conteudo), border='B')
-            pdf.ln(1)
+            pdf.set_font('Arial', '', 8); pdf.multi_cell(0, 5, limpar_texto(cont), border='B')
 
     filename = f"SGP24_{equipe}_{data_p}.pdf"
     path = os.path.join(BASE_DIR, filename)
@@ -137,4 +135,3 @@ def salvar():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-    
